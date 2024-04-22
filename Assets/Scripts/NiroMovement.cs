@@ -79,9 +79,6 @@ public class NiroMovement : MonoBehaviour
         if (predictedPoint.HasValue)
         {
             targetPosition = predictedPoint.Value;
-
-            Debug.DrawRay(transform.position, (targetPosition - (Vector2)transform.position).normalized * 10);
-            Debug.Log("Predicting");
         }
         return targetPosition;
     }
@@ -102,6 +99,7 @@ public class NiroMovement : MonoBehaviour
                 return null;
             }
             var hit = possibleHit.Value;
+            Debug.DrawRay(fromPoint, hit.point - fromPoint, Color.yellow);
             if (hit.collider.gameObject.layer == fieldLayer)
             {
                 var field = hit.collider.GetComponent<PlayerField>();
@@ -114,7 +112,6 @@ public class NiroMovement : MonoBehaviour
             {
                 fromPoint = hit.point;
                 movementDirection = Vector2.Reflect(movementDirection, hit.normal);
-                Debug.DrawRay(fromPoint, movementDirection * 10);
                 continue;
             }
         }
