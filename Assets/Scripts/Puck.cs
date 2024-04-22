@@ -6,6 +6,8 @@ public class Puck : MonoBehaviour
 {
     [SerializeField] private Transform spawnPointForPlayer;
     [SerializeField] private Transform spawnPointForNiro;
+    [SerializeField] private float maxVelocityMagnitude;
+
 
     public event EventHandler<Gate> OnGoal;
     public PlayerField ActiveField { get; private set; }
@@ -16,6 +18,19 @@ public class Puck : MonoBehaviour
     {
         rigidbody = GetComponent<Rigidbody2D>();
         collider = GetComponent<Collider2D>();
+    }
+
+    private void Update()
+    {
+        LimitVelocity();
+    }
+
+    private void LimitVelocity()
+    {
+        if (rigidbody.velocity.magnitude > maxVelocityMagnitude)
+        {
+            rigidbody.velocity = rigidbody.velocity.normalized * maxVelocityMagnitude;
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

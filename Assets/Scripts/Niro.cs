@@ -14,8 +14,8 @@ public class Niro : MonoBehaviour
         movement = GetComponent<NiroMovement>();
     }
 
-    public void Init(Puck puck)
+    public void Init(Puck puck, Person person)
     {
-        movement.Init(this, puck);
+        movement.Init(this, puck, person);
     }
 }

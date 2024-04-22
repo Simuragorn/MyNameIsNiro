@@ -19,7 +19,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        niro.Init(puck);
+        niro.Init(puck, person);
         UpdateScoreText();
         niro.transform.position = niro.SpawnPoint.position;
         person.transform.position = person.SpawnPoint.position;

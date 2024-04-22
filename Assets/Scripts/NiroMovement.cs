@@ -1,13 +1,19 @@
 using Assets.Scripts.Constants;
+using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 
 public class NiroMovement : MonoBehaviour
 {
     [SerializeField] private float force;
+    [SerializeField] private List<Transform> beforeHitPoints;
     private Niro niro;
     private Puck puck;
+    private Person person;
     private Vector2 targetPoint;
+
+    private int beforeHitPointIndex = 0;
 
     private Rigidbody2D rigidbody;
 
@@ -16,16 +22,29 @@ public class NiroMovement : MonoBehaviour
         rigidbody = GetComponent<Rigidbody2D>();
     }
 
-    public void Init(Niro currentNiro, Puck currentPuck)
+    public void Init(Niro currentNiro, Puck currentPuck, Person currentPerson)
     {
         niro = currentNiro;
         puck = currentPuck;
+        person = currentPerson;
+
+        puck.OnGoal += Puck_OnGoal;
+    }
+
+    private void Puck_OnGoal(object sender, Gate e)
+    {
+        beforeHitPointIndex = beforeHitPointIndex = Random.Range(0, beforeHitPoints.Count);
     }
 
     void Update()
     {
-        Vector2 directionVector = GetTargetDirection();
-        rigidbody.AddForce(force * Time.deltaTime * directionVector, ForceMode2D.Impulse);
+        const float minOffset = 0.1f;
+        targetPoint = GetTargetPoint();
+        if (Vector2.Distance((Vector2)transform.position, targetPoint) > minOffset)
+        {
+            Vector2 directionVector = (targetPoint - (Vector2)transform.position).normalized;
+            rigidbody.AddForce(force * Time.deltaTime * directionVector, ForceMode2D.Impulse);
+        }
     }
 
     private void OnDrawGizmos()
@@ -34,31 +53,37 @@ public class NiroMovement : MonoBehaviour
         Gizmos.DrawWireSphere(targetPoint, 0.5f);
     }
 
-    private Vector2 GetTargetDirection()
+    private Vector2 GetTargetPoint()
     {
         if (!puck.enabled)
         {
-            return (niro.SpawnPoint.transform.position - transform.position).normalized;
+            return beforeHitPoints[beforeHitPointIndex].position;
         }
-        return GetDirectionToPuck();
+        return GetPuckTargetPoint();
     }
 
-    private Vector2 GetDirectionToPuck()
+    private Vector2 GetPuckTargetPoint()
     {
         Vector2 targetPosition = puck.transform.position;
+        Vector2? predictedPoint = null;
         if (puck.ActiveField == null)
         {
-            var predictedPoint = TryPredictFieldCollisionPoint(puck.transform.position, puck.Velocity);
-            if (predictedPoint.HasValue)
-            {
-                targetPosition = predictedPoint.Value;
-
-                Debug.DrawRay(transform.position, (targetPosition - (Vector2)transform.position).normalized * 10);
-                Debug.Log("Predicting");
-            }
+            targetPosition = niro.SpawnPoint.position;
+            predictedPoint = TryPredictFieldCollisionPoint(puck.transform.position, puck.Velocity);
         }
-        targetPoint = targetPosition;
-        return (targetPosition - (Vector2)transform.position).normalized;
+        else if (puck.ActiveField.IsPerson)
+        {
+            Vector2 possiblePuckMovement = puck.transform.position - person.transform.position;
+            predictedPoint = TryPredictFieldCollisionPoint(person.transform.position, possiblePuckMovement);
+        }
+        if (predictedPoint.HasValue)
+        {
+            targetPosition = predictedPoint.Value;
+
+            Debug.DrawRay(transform.position, (targetPosition - (Vector2)transform.position).normalized * 10);
+            Debug.Log("Predicting");
+        }
+        return targetPosition;
     }
 
     private Vector2? TryPredictFieldCollisionPoint(Vector2 fromPoint, Vector2 movementDirection)
