@@ -5,13 +5,13 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] private Player player;
+    [SerializeField] private Person person;
     [SerializeField] private Niro niro;
     [SerializeField] private Puck puck;
     [SerializeField] private TextMeshProUGUI scoreText;
 
     private int niroScore = 0;
-    private int playerScore = 0;
+    private int personScore = 0;
     private void Awake()
     {
         puck.OnGoal += Puck_OnGoal;
@@ -22,24 +22,32 @@ public class GameManager : MonoBehaviour
         niro.Init(puck);
         UpdateScoreText();
         niro.transform.position = niro.SpawnPoint.position;
-        player.transform.position = player.SpawnPoint.position;
+        person.transform.position = person.SpawnPoint.position;
         RestartWithDelay(true);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            Restart(true);
+        }
     }
 
     private void Puck_OnGoal(object sender, Gate gate)
     {
         puck.enabled = false;
-        bool playerMadeGoal = gate == niro.Gate;
-        if (playerMadeGoal)
+        bool personMadeGoal = gate == niro.Gate;
+        if (personMadeGoal)
         {
-            playerScore++;
+            personScore++;
         }
         else
         {
             niroScore++;
         }
         UpdateScoreText();
-        StartCoroutine(RestartWithDelay(playerMadeGoal));
+        StartCoroutine(RestartWithDelay(personMadeGoal));
     }
     private IEnumerator RestartWithDelay(bool isPlayerMadeLastGoal)
     {
@@ -47,14 +55,14 @@ public class GameManager : MonoBehaviour
         Restart(isPlayerMadeLastGoal);
     }
 
-    private void Restart(bool isPlayerMadeLastGoal)
+    private void Restart(bool isPersonMadeLastGoal)
     {
         puck.enabled = true;
-        puck.Respawn(isPlayerMadeLastGoal);
+        puck.Respawn(isPersonMadeLastGoal);
     }
 
     private void UpdateScoreText()
     {
-        scoreText.text = $"{playerScore}:{niroScore}";
+        scoreText.text = $"{personScore}:{niroScore}";
     }
 }

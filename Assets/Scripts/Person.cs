@@ -2,17 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Person : MonoBehaviour
 {
     [SerializeField] private Gate gate;
     [SerializeField] private Transform spawnPoint;
-    private PlayerMovement movement;
+    private PersonMovement movement;
 
     public Transform SpawnPoint => spawnPoint;
 
     private void Awake()
     {
-        movement = GetComponent<PlayerMovement>();
+        movement = GetComponent<PersonMovement>();
     }
 
     public Gate Gate => gate;
