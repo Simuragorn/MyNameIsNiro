@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
 {
     [SerializeField] private Person person;
     [SerializeField] private Niro niro;
+    [SerializeField] private SpeechManager speechManager;
     [SerializeField] private Puck puck;
     [SerializeField] private TextMeshProUGUI scoreText;
 
@@ -20,6 +21,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         niro.Init(puck, person);
+        speechManager.Init(niro);
         UpdateScoreText();
         niro.transform.position = niro.SpawnPoint.position;
         person.transform.position = person.SpawnPoint.position;

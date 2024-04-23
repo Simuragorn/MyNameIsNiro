@@ -1,0 +1,19 @@
+{
+	"Name":"test replica 1",
+	"RequiredRespectRange":
+	{
+		"Min":0,
+		"Max":100
+	},
+		"Replicas":[
+			{
+				"Text": "I'm being here for a long time"
+			},
+			{
+				"Text": "However I'm probably younger than you"
+			},
+			{
+				"Text": "But I feel time a bit different then humans do"
+			}
+		]
+}

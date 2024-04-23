@@ -1,0 +1,16 @@
+{
+	"Name":"test replica 1",
+	"RequiredRespectRange":
+	{
+		"Min":0,
+		"Max":100
+	},
+		"Replicas":[
+			{
+				"Text": "Hi! I'm Niro"
+			},
+			{
+				"Text": "I'm so excited to finally meet someone. Would you play with me?"
+			}
+		]
+}
