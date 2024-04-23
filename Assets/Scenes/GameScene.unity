@@ -823,7 +823,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1cfc2633b3d21c74baf5f22283c8389e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  replicTextComponent: {fileID: 255965418}
+  replicaTextComponent: {fileID: 255965418}
   delayPerReplica: 3
   maxDelaysCountPerQuestion: 3
 --- !u!4 &321803377
