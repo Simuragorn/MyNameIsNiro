@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -11,6 +12,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Puck puck;
     [SerializeField] private TextMeshProUGUI scoreText;
 
+    public event EventHandler OnSavingData;
+
     private int niroScore = 0;
     private int personScore = 0;
     private void Awake()
@@ -21,7 +24,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         niro.Init(puck, person);
-        speechManager.Init(niro);
+        speechManager.Init(this, niro);
         UpdateScoreText();
         niro.transform.position = niro.SpawnPoint.position;
         person.transform.position = person.SpawnPoint.position;
@@ -33,6 +36,10 @@ public class GameManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R))
         {
             Restart(true);
+        }
+        if(Input.GetKeyDown(KeyCode.Space))
+        {
+            OnSavingData?.Invoke(this, EventArgs.Empty);
         }
     }
 

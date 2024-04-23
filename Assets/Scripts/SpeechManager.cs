@@ -11,35 +11,60 @@ using UnityEngine;
 
 public class SpeechManager : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI replicTextComponent;
+    [SerializeField] private TextMeshProUGUI replicaTextComponent;
     [SerializeField] private float delayPerReplica;
     [SerializeField] private int maxDelaysCountPerQuestion;
 
-    public event System.EventHandler OnTopicEnded;
+    public event System.EventHandler<Topic> OnTopicEnded;
 
+    private SpeechManagerSaveData saveData;
     private Topic currentTopic;
     private Replica currentReplica;
     private Niro niro;
     private List<Topic> topics;
     private bool? userAnswer;
 
-    public void Init(Niro currentNiro)
+    public void Init(GameManager gameManager, Niro currentNiro)
     {
+        gameManager.OnSavingData += GameManager_OnSavingData;
+        OnTopicEnded += SpeechManager_OnTopicEnded;
         niro = currentNiro;
+
+        LoadData();
         LoadTopics();
         StartNewTopic();
-        OnTopicEnded += SpeechManager_OnTopicEnded;
     }
 
-    private void SpeechManager_OnTopicEnded(object sender, EventArgs e)
+    private void GameManager_OnSavingData(object sender, EventArgs e)
     {
+        SaveData();
+    }
+
+    private void LoadData()
+    {
+        saveData = SaveHelper.Load<SpeechManagerSaveData>(SaveDataConstants.SpeechManagerSaveDataKey);
+    }
+
+    private void SaveData()
+    {
+        SaveHelper.Save(SaveDataConstants.SpeechManagerSaveDataKey, saveData);
+    }
+
+    private void SpeechManager_OnTopicEnded(object sender, Topic topic)
+    {
+        saveData.DiscussedTopicNames.Add(topic.Name);
         StartNewTopic();
     }
 
     private void StartNewTopic()
     {
-        List<Topic> suitableTopics = topics.Where(t => t.RequiredRespectRange.Contains(niro.Respect)).ToList();
-
+        List<Topic> suitableTopics = topics.Where(t => t.RequiredRespectRange.Contains(niro.Respect) &&
+        !saveData.DiscussedTopicNames.Contains(t.Name)).ToList();
+        if (suitableTopics.Count == 0)
+        {
+            saveData.DiscussedTopicNames.Clear();
+            suitableTopics = topics.Where(t => t.RequiredRespectRange.Contains(niro.Respect)).ToList();
+        }
         int topicIndex = UnityEngine.Random.Range(0, suitableTopics.Count);
         currentTopic = suitableTopics[topicIndex];
         StartCoroutine(PerformReplicas());
@@ -52,28 +77,28 @@ public class SpeechManager : MonoBehaviour
             Replica newReplica = currentTopic.Replicas[i];
             yield return SetNewReplica(newReplica);
         }
+        var endedTopic = currentTopic;
         currentReplica = null;
         currentTopic = null;
-        OnTopicEnded?.Invoke(this, EventArgs.Empty);
+        OnTopicEnded?.Invoke(this, endedTopic);
     }
 
     private IEnumerator SetNewReplica(Replica newReplica)
     {
         currentReplica = newReplica;
-        replicTextComponent.text = currentReplica.Text;
+        replicaTextComponent.text = currentReplica.Text;
         yield return new WaitForSeconds(delayPerReplica);
 
-        if (!currentReplica.IsQuestion)
+        if (currentReplica.IsQuestion)
         {
-            yield return null;
-        }
-        for (int i = 0; i < maxDelaysCountPerQuestion; ++i)
-        {
-            if (userAnswer.HasValue)
+            for (int i = 0; i < maxDelaysCountPerQuestion; ++i)
             {
-                break;
+                if (userAnswer.HasValue)
+                {
+                    break;
+                }
+                yield return new WaitForSeconds(delayPerReplica);
             }
-            yield return new WaitForSeconds(delayPerReplica);
         }
     }
 
